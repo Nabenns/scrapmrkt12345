@@ -94,3 +94,36 @@ If you are not using Cloudflare, you can install Nginx Proxy Manager on your VPS
     *   Forward Port: `8000`
 4.  **SSL Tab**: Request a new Let's Encrypt certificate.
 
+## 8. Troubleshooting
+
+### "404 Not Found" (nginx/ubuntu)
+If you see a default Nginx page instead of your app, it means the **VPS Host's Nginx** is running on port 80 and blocking our Docker app.
+
+**Solution: Configure Host Nginx as Proxy**
+1.  SSH into your VPS.
+2.  Create a new config file:
+    ```bash
+    sudo nano /etc/nginx/sites-available/mrkt-scraper
+    ```
+3.  Paste this content:
+    ```nginx
+    server {
+        listen 80;
+        server_name api.bensserver.cloud;
+
+        location / {
+            proxy_pass http://127.0.0.1:8000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+    ```
+4.  Enable the site and restart Nginx:
+    ```bash
+    sudo ln -s /etc/nginx/sites-available/mrkt-scraper /etc/nginx/sites-enabled/
+    sudo nginx -t
+    sudo systemctl restart nginx
+    ```
+
+
