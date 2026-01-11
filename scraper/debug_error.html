@@ -1,0 +1,875 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Sign In with Auth0</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <style>
+    body, html {
+      height: 100%;
+      background: #000; /* Lighter shade of black */
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-size: 16px;
+    }
+
+    .invisible {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .visible {
+      display: block;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .login-container {
+      position: relative;
+      height: 100%;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-top: 64px;
+
+    }
+
+    .login-box {
+      padding: 2.5rem;
+      background: 
+        radial-gradient(circle at 0% 0%, rgba(116, 58, 213, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 100% 0%, rgba(45, 206, 255, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(121, 40, 202, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 0% 100%, rgba(2, 139, 179, 0.12) 0%, transparent 50%),
+        linear-gradient(145deg, 
+          rgba(25, 15, 35, 0.95), 
+          rgba(45, 25, 85, 0.95),
+          rgba(28, 20, 65, 0.95)
+        );
+      width: 100%;
+      max-width: 500px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 10px 50px rgba(244, 243, 243, 0.2);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .login-header h3 {
+      font-size: 42px;
+      margin: 0;
+      color: white;
+      font-weight: 300;
+      letter-spacing: -0.025em;
+      white-space: nowrap;
+    }
+
+    .login-header h5 {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 1rem;
+      font-weight: 300;
+      line-height: 1.5;
+    }
+
+    /* Tab Styles */
+    .tabs {
+      display: flex;
+      margin-bottom: 2.5rem;
+      gap: 2.5rem;
+      justify-content: center;
+    }
+
+    .tab {
+      padding: 0;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: none;
+      border: none;
+      font-size: 18px;
+      font-weight: 300;
+    }
+
+    .tab.active {
+      color: white;
+      font-weight: 400;
+    }
+
+    .tab-content {
+      min-height: 420px;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.875rem 2.5rem 0.875rem 1.25rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      height: 50px;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+      background: rgba(255, 255, 255, 0.08);
+      outline: none;
+    }
+
+    .form-control::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .input-arrow {
+      position: absolute;
+      right: 0.875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 1;
+    }
+
+    .input-arrow:hover {
+      color: white;
+    }
+
+    .btn {
+      height: 50px;
+      border-radius: 12px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      padding: 0 1.25rem;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+
+    .btn-google {
+      background: transparent;
+      border: none;
+      color: white;
+      padding: 0;
+      height: auto;
+      font-weight: 300;
+    }
+
+    .btn-google:hover {
+      background: transparent;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .btn-primary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      font-weight: 400;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .btn-primary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .divider {
+      text-align: center;
+      margin: 2rem 0;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 16px;
+      font-weight: 300;
+    }
+
+    #error-message {
+      display: none;
+      color: rgb(239, 68, 68);
+      margin-bottom: 1rem;
+      font-size: 14px;
+      background: none;
+      border: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    #success-message {
+      display: none;
+      color: #10B981;
+      margin-bottom: 1rem;
+      font-size: 14px;
+      background: none;
+      border: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    .captcha-container {
+      background: rgba(255, 255, 255, 0.05);
+      border: none;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      border-radius: 12px;
+    }
+
+    /* Google Icon */
+    .google-icon {
+      width: 22px;
+      height: 22px;
+      margin-right: 10px;
+    }
+
+    .brand-text {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 74px;
+      font-weight: 300;
+      color: white;
+      letter-spacing: -0.03em;
+      opacity: 0.8;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .password-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .password-requirements {
+      margin-top: 0.5rem;
+      margin-bottom: 1.5rem;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+      display: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .password-requirements.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .requirement {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .requirement.valid {
+      color: #34D399;
+    }
+
+    .requirement.invalid {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .requirement-icon {
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .requirement.valid .requirement-icon::before {
+      content: '✓';
+      font-size: 12px;
+    }
+
+    .requirement.invalid .requirement-icon::before {
+      content: '○';
+      font-size: 10px;
+    }
+
+    /* Adjust the password input group specifically */
+    .password-group .input-arrow {
+      top: 25px;
+    }
+
+    .forgot-password {
+      text-align: right;
+      margin-bottom: 1.5rem;
+    }
+
+    .forgot-password a {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s ease;
+    }
+
+    .forgot-password a:hover {
+      color: white;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="brand-text">MRKT</div>
+    <div class="login-box">
+      <div class="login-header">
+        <h3 id="header-title">Let's get you started</h3>
+        <h5 id="header-subtitle">Create an account to finish checking out</h5>
+      </div>
+      <div class="tabs">
+        <button class="tab" data-tab="login">Log In</button>
+        <button class="tab active" data-tab="signup">Sign Up</button>
+      </div>
+      <div id="error-message" class="alert alert-danger"></div>
+      <div id="success-message"></div>
+      
+      <!-- Login Tab -->
+      <div class="tab-content" id="login-tab">
+        <form onsubmit="return false;" method="post">
+          <button type="button" id="btn-google" class="btn btn-google btn-block">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4=" class="google-icon" alt="Google">
+            Continue with Google
+          </button>
+          <div class="divider">or</div>
+          <div class="form-group">
+            <input type="email" class="form-control" id="email-login" placeholder="Email" autofocus="" style="">
+            <button type="button" class="input-arrow">→</button>
+          </div>
+          <div class="form-group password-group">
+            <input type="password" class="form-control" id="password-login" placeholder="Password" style="">
+            <button type="button" class="input-arrow toggle-password">👁</button>
+          </div>
+          <div class="forgot-password">
+            <a href="#" id="forgot-password">Forgot password?</a>
+          </div>
+          <div class="captcha-container form-group" style="display: none;"></div>
+          <button type="submit" id="btn-login" class="btn btn-primary btn-block">
+            Continue
+          </button>
+          
+        
+<!-- 
+          <button
+            type="button"
+            id="btn-google"
+            class="btn btn-google btn-block">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4=" class="google-icon" alt="Google">
+            Continue with Google
+          </button> -->
+        </form>
+      </div>
+
+      <!-- Sign Up Tab -->
+      <div class="tab-content active" id="signup-tab">
+        <form onsubmit="return false;" method="post">
+
+          <button type="button" id="btn-google-signup" class="btn btn-google btn-block">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4=" class="google-icon" alt="Google">
+            Continue with Google
+          </button>
+          <div class="divider">or</div>
+
+          <div class="form-group">
+            <input type="email" class="form-control" id="email-signup" placeholder="Email" autofocus="" style="">
+            <button type="button" class="input-arrow">→</button>
+          </div>
+          <div class="form-group password-group">
+            <input type="password" class="form-control" id="password-signup" placeholder="Password" style="">
+            <button type="button" class="input-arrow toggle-password">👁</button>
+          </div>
+          <div class="password-requirements">
+            <div class="requirement invalid" data-requirement="length">
+              <span class="requirement-icon"></span>
+              <span>At least 8 characters</span>
+            </div>
+            <div class="requirement invalid" data-requirement="lowercase">
+              <span class="requirement-icon"></span>
+              <span>One lowercase letter</span>
+            </div>
+            <div class="requirement invalid" data-requirement="uppercase">
+              <span class="requirement-icon"></span>
+              <span>One uppercase letter</span>
+            </div>
+            <div class="requirement invalid" data-requirement="numbers">
+              <span class="requirement-icon"></span>
+              <span>One number</span>
+            </div>
+            <div class="requirement invalid" data-requirement="special">
+              <span class="requirement-icon"></span>
+              <span>One special character</span>
+            </div>
+          </div>
+          <div class="captcha-container-signup form-group"></div>
+          <button type="submit" id="btn-signup" class="btn btn-primary btn-block">
+            Continue
+          </button>
+          
+          
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.auth0.com/js/auth0/9.28/auth0.min.js"></script>
+  <script src="https://cdn.auth0.com/js/polyfills/1.0/object-assign.min.js"></script>
+
+  <script>
+    window.addEventListener('load', function() {
+      // Tab Switching Logic
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+      const headerTitle = document.getElementById('header-title');
+      const headerSubtitle = document.getElementById('header-subtitle');
+      
+
+      // Function to update header content
+      function updateHeaderContent(tabId) {
+        if (tabId === 'login') {
+          headerTitle.textContent = 'Welcome to MRKT';
+          headerSubtitle.textContent = 'Log in to continue to your account';
+        } else {
+          headerTitle.textContent = "Let's get you started";
+          headerSubtitle.textContent = 'Create an account to finish checking out';
+        }
+      }
+
+      // Set initial header content for signup (default)
+      updateHeaderContent('signup');
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          // Remove active class from all tabs and contents
+          tabs.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
+
+          // Add active class to clicked tab and corresponding content
+          tab.classList.add('active');
+          const tabId = tab.getAttribute('data-tab');
+          document.getElementById(`${tabId}-tab`).classList.add('active');
+
+          // Update header content
+          updateHeaderContent(tabId);
+
+          // Reset error message
+          document.getElementById('error-message').style.display = 'none';
+          document.getElementById('success-message').style.display = 'none';
+
+          // Reinitialize captcha for the active tab
+          if (tabId === 'login') {
+            initLoginCaptcha();
+          } else {
+            initSignupCaptcha();
+          }
+          // Set focus on the active tab's email input
+          setEmailFocus();
+        });
+      });
+
+      // Set focus on the active tab's email input
+      function setEmailFocus() {
+        const activeTab = document.querySelector('.tab-content.active');
+        const emailInput = activeTab.querySelector('input[type="email"]');
+        if (emailInput) {
+          emailInput.focus();
+        }
+      }
+
+      // Call setEmailFocus after tab switch and on page load
+      
+      // Set initial focus
+      setEmailFocus();
+
+
+      var config = JSON.parse(
+        decodeURIComponent(escape(window.atob('eyJpY29uIjoiaHR0cHM6Ly9tcmt0LXNlcnZlci1hMjQwZGVmZjcxNTIuaGVyb2t1YXBwLmNvbS9pbWFnZXMvbG9nby5wbmciLCJhc3NldHNVcmwiOiIiLCJhdXRoMERvbWFpbiI6ImF1dGgubXJrdGVkZ2UuYWkiLCJhdXRoMFRlbmFudCI6ImRldi1ybGVkYXU3bHNuZ3Z5cWM1IiwiY2xpZW50Q29uZmlndXJhdGlvbkJhc2VVcmwiOiJodHRwczovL2F1dGgubXJrdGVkZ2UuYWkvIiwiY2FsbGJhY2tPbkxvY2F0aW9uSGFzaCI6ZmFsc2UsImNhbGxiYWNrVVJMIjoiaHR0cHM6Ly9hcHAubXJrdGVkZ2UuYWkiLCJjZG4iOiJodHRwczovL2Nkbi5hdXRoMC5jb20vIiwiY2xpZW50SUQiOiJTaUNrR2tsNEdZakRBWmQxMW91bVkyUlN0V0hmTTFndiIsImRpY3QiOnsic2lnbmluIjp7InRpdGxlIjoiTVJLVCBBSSJ9fSwiZXh0cmFQYXJhbXMiOnsicHJvdG9jb2wiOiJvYXV0aDIiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIG9mZmxpbmVfYWNjZXNzIiwiYXVkaWVuY2UiOiJodHRwczovL21ya3Qtc2VydmVyLWEyNDBkZWZmNzE1Mi5oZXJva3VhcHAuY29tIiwicmVzcG9uc2VfdHlwZSI6ImNvZGUiLCJyZXNwb25zZV9tb2RlIjoicXVlcnkiLCJub25jZSI6IlVEYzROVGgyUmtkd1EwRjFjVTFtWm01aVZURnVkWFJNZUZVelRXSkdjRVZwVFg0MmNDMHdaa0pVUXc9PSIsImNvZGVfY2hhbGxlbmdlIjoidjdwb05yVjFjZU94aUJvR2ZfYVFSeXdRVW55MHRFYWlYUktZVTl6X2F3byIsImNvZGVfY2hhbGxlbmdlX21ldGhvZCI6IlMyNTYiLCJhdXRoMENsaWVudCI6ImV5SnVZVzFsSWpvaVlYVjBhREF0Y21WaFkzUWlMQ0oyWlhKemFXOXVJam9pTWk0MExqQWlmUT09IiwiX2NzcmYiOiJWa0xJZUxXRi1ITmYtUl9HTXdUV3djS1ZmR2xHamhvenVUUUEiLCJfaW50c3RhdGUiOiJkZXByZWNhdGVkIiwic3RhdGUiOiJoS0ZvMlNCRmJtRnNWVWRqWlRJeFZWTkZSbVJtVVdkeVpEWnBhVm93U2tOUVNuSkJlcUZ1cFd4dloybHVvM1JwWk5rZ2VtZHdOazFuU2xaMVltMXZVbU5PT0cxNWVsQTVkbFl0VjJWME9IVmFSRUtqWTJsazJTQlRhVU5yUjJ0c05FZFpha1JCV21ReE1XOTFiVmt5VWxOMFYwaG1UVEZuZGcifSwiaW50ZXJuYWxPcHRpb25zIjp7InByb3RvY29sIjoib2F1dGgyIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCBvZmZsaW5lX2FjY2VzcyIsImF1ZGllbmNlIjoiaHR0cHM6Ly9tcmt0LXNlcnZlci1hMjQwZGVmZjcxNTIuaGVyb2t1YXBwLmNvbSIsInJlc3BvbnNlX3R5cGUiOiJjb2RlIiwicmVzcG9uc2VfbW9kZSI6InF1ZXJ5Iiwibm9uY2UiOiJVRGM0TlRoMlJrZHdRMEYxY1UxbVptNWlWVEZ1ZFhSTWVGVXpUV0pHY0VWcFRYNDJjQzB3WmtKVVF3PT0iLCJjb2RlX2NoYWxsZW5nZSI6InY3cG9OclYxY2VPeGlCb0dmX2FRUnl3UVVueTB0RWFpWFJLWVU5el9hd28iLCJjb2RlX2NoYWxsZW5nZV9tZXRob2QiOiJTMjU2IiwiYXV0aDBDbGllbnQiOiJleUp1WVcxbElqb2lZWFYwYURBdGNtVmhZM1FpTENKMlpYSnphVzl1SWpvaU1pNDBMakFpZlE9PSIsIl9jc3JmIjoiVmtMSWVMV0YtSE5mLVJfR013VFd3Y0tWZkdsR2pob3p1VFFBIiwiX2ludHN0YXRlIjoiZGVwcmVjYXRlZCIsInN0YXRlIjoiaEtGbzJTQkZibUZzVlVkalpUSXhWVk5GUm1SbVVXZHlaRFpwYVZvd1NrTlFTbkpCZXFGdXBXeHZaMmx1bzNScFpOa2dlbWR3TmsxblNsWjFZbTF2VW1OT09HMTVlbEE1ZGxZdFYyVjBPSFZhUkVLalkybGsyU0JUYVVOclIydHNORWRaYWtSQldtUXhNVzkxYlZreVVsTjBWMGhtVFRGbmRnIn0sIndpZGdldFVybCI6Imh0dHBzOi8vY2RuLmF1dGgwLmNvbS93Mi9hdXRoMC13aWRnZXQtNS4yLm1pbi5qcyIsImlzVGhpcmRQYXJ0eUNsaWVudCI6ZmFsc2UsImF1dGhvcml6YXRpb25TZXJ2ZXIiOnsidXJsIjoiaHR0cHM6Ly9hdXRoLm1ya3RlZGdlLmFpIiwiaXNzdWVyIjoiaHR0cHM6Ly9hdXRoLm1ya3RlZGdlLmFpLyJ9LCJjb2xvcnMiOnt9fQ==')))
+      );
+
+      // Add this after config parsing
+      console.log('Auth0 Configuration:', {
+        domain: config.auth0Domain,
+        clientID: config.clientID,
+        callbackURL: config.callbackURL,
+        tenant: config.auth0Tenant
+      });
+
+      var leeway = config.internalOptions.leeway;
+      if (leeway) {
+        var convertedLeeway = parseInt(leeway);
+        if (!isNaN(convertedLeeway)) {
+          config.internalOptions.leeway = convertedLeeway;
+        }
+      }
+
+      var params = {
+        overrides: {
+          __tenant: config.auth0Tenant,
+          __token_issuer: config.authorizationServer.issuer
+        },
+        domain: config.auth0Domain,
+        clientID: config.clientID,
+        redirectUri: config.callbackURL,
+        responseType: 'code',
+        scope: config.internalOptions.scope,
+        _csrf: config.internalOptions._csrf,
+        state: config.internalOptions.state,
+        _intstate: config.internalOptions._intstate
+      };
+
+      var triggerCaptcha = null;
+      var signupCaptcha = null;
+      var webAuth = new auth0.WebAuth(params);
+      var databaseConnection = 'Username-Password-Authentication';
+      
+      function initLoginCaptcha() {
+        var captcha = webAuth.renderCaptcha(
+          document.querySelector('.captcha-container'),
+          null,
+          (error, payload) => {
+            if (payload) {
+              triggerCaptcha = payload.triggerCaptcha;
+            }
+          }
+        );
+        return captcha;
+      }
+
+      function initSignupCaptcha() {
+        signupCaptcha = webAuth.renderSignupCaptcha(
+          document.querySelector('.captcha-container-signup'),
+          null,
+          (error, payload) => {
+            if (payload) {
+              triggerCaptcha = payload.triggerCaptcha;
+            }
+          }
+        );
+        return signupCaptcha;
+      }
+
+      // Initialize captchas
+      var captcha = initLoginCaptcha();
+      initSignupCaptcha();
+
+      // Add this after webAuth initialization
+      console.log('WebAuth initialized:', webAuth);
+
+      // Email validation function
+      function validateEmail(email) {
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+      }
+
+      // Add password validation function
+      function validatePassword(password) {
+        const rules = {
+          length: password.length >= 8,
+          lowercase: /[a-z]/.test(password),
+          uppercase: /[A-Z]/.test(password),
+          numbers: /[0-9]/.test(password),
+          special: /[!@#$%^&*]/.test(password)
+        };
+
+        const validTypes = Object.values(rules).filter(Boolean).length;
+        const isValid = rules.length && validTypes >= 3;
+
+        return {
+          isValid,
+          rules,
+          validTypes
+        };
+      }
+
+      function getPasswordErrorMessage(validation) {
+        if (!validation.rules.length) {
+          return 'Password must be at least 8 characters long';
+        }
+
+        const missingRules = [];
+        if (!validation.rules.lowercase) missingRules.push('lowercase letters');
+        if (!validation.rules.uppercase) missingRules.push('uppercase letters');
+        if (!validation.rules.numbers) missingRules.push('numbers');
+        if (!validation.rules.special) missingRules.push('special characters');
+
+        const needMoreTypes = 3 - validation.validTypes;
+        if (needMoreTypes > 0) {
+          return `Password must include ${needMoreTypes} more of the following: ${missingRules.join(', ')}`;
+        }
+
+        return '';
+      }
+
+      function login(e) {
+        e.preventDefault();
+        var button = this;
+        var username = document.getElementById('email-login').value;
+        var password = document.getElementById('password-login').value;
+        button.disabled = true;
+
+        var request = () => {
+          webAuth.login({
+            realm: databaseConnection,
+            username: username,
+            password: password,
+            captcha: captcha.getValue()
+          }, function(err) {
+            if (err) displayError(err);
+            button.disabled = false;
+          });
+        };
+
+        if (triggerCaptcha) {
+          triggerCaptcha(request);
+        } else {
+          request();
+        }
+      }
+
+      function signup(e) {
+        e.preventDefault();
+        var button = this;
+        var email = document.getElementById('email-signup').value;
+        var password = document.getElementById('password-signup').value;
+
+        // Basic validation before sending request
+        if (!password) {
+          displayError({ error: 'String (password) is too short (0 chars), minimum 1' });
+          return;
+        }
+
+        // Password strength validation
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.isValid) {
+          displayError({ 
+            error: 'invalid_password',
+            description: getPasswordErrorMessage(passwordValidation)
+          });
+          return;
+        }
+
+        button.disabled = true;
+
+        var request = () => {
+          webAuth.redirect.signupAndLogin({
+            connection: databaseConnection,
+            email: email,
+            password: password,
+            captcha: signupCaptcha.getValue()
+          }, function(err) {
+            if (err) displayError(err);
+            button.disabled = false;
+          });
+        };
+
+        if (triggerCaptcha) {
+          triggerCaptcha(request);
+        } else {
+          request();
+        }
+      }
+
+      function loginWithGoogle() {
+        webAuth.authorize({
+          connection: 'google-oauth2'
+        }, function(err) {
+          if (err) displayError(err);
+        });
+      }
+
+      function displayMessage(message, isError = true) {
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        
+        if (isError) {
+          errorMessage.innerText = message;
+          errorMessage.style.display = 'block';
+          successMessage.style.display = 'none';
+        } else {
+          successMessage.innerText = message;
+          successMessage.style.display = 'block';
+          errorMessage.style.display = 'none';
+        }
+      }
+
+      function displayError(err) {
+        if (captcha) captcha.reload();
+        if (signupCaptcha) signupCaptcha.reload();
+        
+        // Custom error message mapping
+        const errorMessages = {
+          'String (password) is too short (0 chars), minimum 1': 'Please enter a password',
+          'password': 'Please enter a valid password',
+          'invalid_password': 'Password requirements not met',
+          'invalid_signup': 'Unable to sign up',
+          'invalid_user_password': err.description || 'Invalid email or password',
+          'unauthorized': 'Invalid email or password',
+          'error in email - email format validation failed': 'Invalid email',
+          'invalid_email': 'Please enter a valid email address',
+          'email_invalid': 'Please enter a valid email address',
+          'email_verification_required': 'Please verify your email',
+          'email_exists': 'Account already exists',
+          'PasswordStrengthError': 'Password requirements not met',
+          'reset_failed': err.description || 'Failed to send password reset email',
+          'email_required': 'Please enter your email address',
+          'password_reset_sent': 'Password reset email sent. Please check your inbox.',
+          'user_not_found': 'No account found with this email address.',
+          'password_reset_failed': 'Failed to send password reset email. Please try again later.'
+        };
+
+        // Get user-friendly message or parse error string
+        let userMessage = err.description || 
+                          errorMessages[err.error] || 
+                          errorMessages[err.name] ||
+                          errorMessages[err.code] || 
+                          'Failed to process request';
+
+        displayMessage(userMessage, err.error !== 'password_reset_sent');
+      }
+
+      // Event Listeners
+      document.getElementById('btn-login').addEventListener('click', login);
+      document.getElementById('btn-signup').addEventListener('click', signup);
+      document.getElementById('btn-google').addEventListener('click', loginWithGoogle);
+      document.getElementById('btn-google-signup').addEventListener('click', loginWithGoogle);
+
+      // Add this after the validatePassword function
+      function updatePasswordRequirements(password) {
+        const validation = validatePassword(password);
+        const requirements = document.querySelectorAll('.requirement');
+        
+        requirements.forEach(req => {
+          const type = req.getAttribute('data-requirement');
+          if (validation.rules[type]) {
+            req.classList.remove('invalid');
+            req.classList.add('valid');
+          } else {
+            req.classList.remove('valid');
+            req.classList.add('invalid');
+          }
+        });
+      }
+
+      // Update the password input event listeners
+      const passwordInput = document.getElementById('password-signup');
+      const requirements = document.querySelector('.password-requirements');
+
+      passwordInput.addEventListener('focus', function() {
+        requirements.classList.add('active');
+      });
+
+      passwordInput.addEventListener('blur', function() {
+        if (this.value === '') {
+          requirements.classList.remove('active');
+        }
+      });
+
+      passwordInput.addEventListener('input', function(e) {
+        updatePasswordRequirements(e.target.value);
+      });
+
+      // Initialize requirements as invalid
+      updatePasswordRequirements('');
+
+      // Password toggle functionality
+      document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+          const passwordInput = this.previousElementSibling;
+          const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+          passwordInput.setAttribute('type', type);
+          this.textContent = type === 'password' ? '👁' : '🔒';
+        });
+      });
+
+      // Update the forgot password event listener
+      document.getElementById('forgot-password').addEventListener('click', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email-login').value;
+        const errorMessage = document.getElementById('error-message');
+        
+        if (!email) {
+          displayMessage('Please enter your email address before clicking "Forgot password"', true);
+          return;
+        }
+
+        if (!validateEmail(email)) {
+          displayMessage('Please enter a valid email address', true);
+          return;
+        }
+
+        // Show loading state
+        displayMessage('Sending password reset email...', true);
+
+        // Debug logs
+        console.log('Attempting password reset for:', email);
+
+        // Make direct        // Debug logs
+        console.log('Attempting password reset for:', email);
+
+        // Make direct API call to Auth0
+        fetch(`https://${config.auth0Domain}/dbconnections/change_password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            client_id: config.clientID,
+            email: email,
+            connection: 'Username-Password-Authentication'
+          })
+        })
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+          }
+          return response.text();
+        })
+        .then(response => {
+          console.log('Password reset success:', response);
+          displayMessage('Password reset email sent. Please check your inbox.', false);
+        })
+        .catch(error => {
+          console.error('Password reset error:', error);
+          if (error.error === 'invalid_user_password' || error.description === 'User does not exist.') {
+            displayMessage('No account found with this email address.', true);
+          } else {
+            displayMessage('Failed to send password reset email. Please try again later.', true);
+          }
+        });
+      });
+    });
+  </script>
+
+   </body></html>

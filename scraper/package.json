@@ -1,0 +1,20 @@
+{
+    "name": "mrkt-scraper",
+    "version": "1.0.0",
+    "description": "Headless browser scraper for MRKT headlines",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "node src/index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "dotenv": "^16.3.1",
+        "pg": "^8.11.3",
+        "playwright": "^1.40.0",
+        "winston": "^3.11.0",
+        "axios": "^1.6.2",
+        "node-cron": "^3.0.3"
+    },
+    "author": "",
+    "license": "ISC"
+}
