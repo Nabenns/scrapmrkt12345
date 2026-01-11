@@ -17,7 +17,13 @@ const logger = winston.createLogger({
   ],
 });
 
+const fs = require('fs');
+const path = require('path');
+
+// ... existing logger setup ...
+
 const SCHEDULE = process.env.CRON_SCHEDULE || '*/10 * * * *';
+const TRIGGER_FILE = path.join(__dirname, '../storage/trigger.txt');
 
 logger.info(`Starting MRKT Scraper Service. Schedule: ${SCHEDULE}`);
 
@@ -37,5 +43,20 @@ runScraper();
 
 // Schedule
 cron.schedule(SCHEDULE, () => {
+  logger.info('Running scheduled scrape job...');
   runScraper();
 });
+
+// Watch for trigger file (Immediate Run)
+setInterval(() => {
+  if (fs.existsSync(TRIGGER_FILE)) {
+    logger.info('Trigger file detected! Running scraper immediately...');
+    try {
+      fs.unlinkSync(TRIGGER_FILE); // Delete trigger file
+      runScraper();
+    } catch (err) {
+      logger.error(`Failed to process trigger file: ${err.message}`);
+    }
+  }
+}, 5000); // Check every 5 seconds
+
