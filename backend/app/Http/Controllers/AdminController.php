@@ -13,13 +13,19 @@ class AdminController extends Controller
         $stats = [
             'hits' => 0,
             'last_access' => 'Never',
+            'total_requests' => 0,
         ];
 
         try {
             $stats['hits'] = \Illuminate\Support\Facades\Redis::get('api:stats:hits') ?? 0;
             $stats['last_access'] = \Illuminate\Support\Facades\Redis::get('api:stats:last_access') ?? 'Never';
+            $stats['total_requests'] = \Illuminate\Support\Facades\Redis::get('api:analytics:total_requests') ?? 0;
         } catch (\Exception $e) {
-            // Ignore
+            // Redis not available, ignore
+            \Illuminate\Support\Facades\Log::warning('Redis not available for admin stats: ' . $e->getMessage());
+        } catch (\Error $e) {
+             // Handle Class not found error
+             \Illuminate\Support\Facades\Log::warning('Redis class not found: ' . $e->getMessage());
         }
 
         return view('admin.index', compact('stats'));
