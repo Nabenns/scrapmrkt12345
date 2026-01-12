@@ -4,12 +4,20 @@ const path = require('path');
 
 const BASE_URL = 'https://mrkt-server-a240deff7152.herokuapp.com';
 const ENDPOINTS_TO_TEST = [
-    '/mrkt-sentiment',
-    '/economic-data-summary',
-    '/trump-tracker',
-    '/trump-volatility',
-    '/etf-summary',
-    '/safe-haven-summary'
+    'mrkt-sentiment',
+    'economic-data-summary',
+    'trump-tracker',
+    'trump-volatility',
+    'etf-summary',
+    'safe-haven-summary'
+];
+
+const PREFIXES = [
+    '',
+    '/equities',
+    '/api',
+    '/api/v1',
+    '/market'
 ];
 
 async function getAccessToken() {
@@ -34,25 +42,29 @@ async function probe() {
     console.log(`Probing ${BASE_URL} with token...`);
 
     for (const endpoint of ENDPOINTS_TO_TEST) {
-        try {
-            const url = `${BASE_URL}${endpoint}`;
-            const response = await axios.get(url, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept': 'application/json'
-                },
-                validateStatus: () => true // Don't throw on error status
-            });
+        for (const prefix of PREFIXES) {
+            const path = `${prefix}/${endpoint}`;
+            try {
+                const url = `${BASE_URL}${path}`;
+                const response = await axios.get(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Accept': 'application/json'
+                    },
+                    validateStatus: () => true
+                });
 
-            console.log(`[${response.status}] ${endpoint} - ${response.headers['content-type']}`);
-
-            if (response.status === 200 && response.headers['content-type']?.includes('application/json')) {
-                const preview = JSON.stringify(response.data).substring(0, 100);
-                console.log(`    Data: ${preview}...`);
+                if (response.status === 200) {
+                    console.log(`[SUCCESS] ${path} - ${response.headers['content-type']}`);
+                    const preview = JSON.stringify(response.data).substring(0, 200);
+                    console.log(`    Data: ${preview}...`);
+                } else {
+                    // console.log(`[${response.status}] ${path}`);
+                }
+            } catch (e) {
+                // console.log(`[ERR] ${path} - ${e.message}`);
             }
-        } catch (e) {
-            console.log(`[ERR] ${endpoint} - ${e.message}`);
         }
     }
 }
