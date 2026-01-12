@@ -27,37 +27,25 @@ class AdminController extends Controller
 
     public function updateToken(Request $request)
     {
-        $request->validate([
-            'token_key' => 'required|string',
-            'token_value' => 'required|json',
-        ]);
+        // In a real scenario, we might parse an uploaded file or a pasted JSON.
+        // For now, we'll just touch the trigger file to restart the scraper if the user clicks "Update".
+        // But the UI form is actually just a button to run the scraper in the new design.
+        // Let's keep this for backward compatibility or future token pasting.
+        
+        return back()->with('error', 'Token update via UI is not fully implemented yet. Please use the "Run Scraper" button.');
+    }
 
+    public function triggerScraper()
+    {
         try {
-            $key = $request->input('token_key');
-            $value = json_decode($request->input('token_value'), true);
-
-            // Construct the full JSON structure expected by the scraper
-            $data = [
-                $key => $value
-            ];
-
-            // Save to the shared volume
-            // The volume is mounted at storage/app/scraper_tokens
-            // So we use the 'local' disk but point to that directory or just use absolute path if needed.
-            // Since we mounted it to storage/app/scraper_tokens, we can use the 'local' disk if we configure it,
-            // or just use file_put_contents on the absolute path.
-            
-            $path = storage_path('app/scraper_tokens/local_storage.json');
-            file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT));
-
             // Create a trigger file to notify the scraper to run immediately
             $triggerPath = storage_path('app/scraper_tokens/trigger.txt');
             file_put_contents($triggerPath, 'run');
 
-            return back()->with('success', 'Token updated successfully! Scraper triggered to run immediately.');
+            return back()->with('success', 'Scraper triggered successfully! Check logs for progress.');
         } catch (\Exception $e) {
-            Log::error('Failed to update token: ' . $e->getMessage());
-            return back()->with('error', 'Failed to update token: ' . $e->getMessage());
+            Log::error('Failed to trigger scraper: ' . $e->getMessage());
+            return back()->with('error', 'Failed to trigger scraper: ' . $e->getMessage());
         }
     }
 }

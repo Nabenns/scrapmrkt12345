@@ -15,11 +15,20 @@ async function getAccessToken(logger) {
 
     try {
         const lsData = JSON.parse(fs.readFileSync(lsPath, 'utf8'));
-        // Find the key containing the access token
-        // It usually ends with "::openid profile email offline_access"
-        const tokenKey = Object.keys(lsData).find(k => k.includes('::openid profile email offline_access'));
 
-        if (!tokenKey || !lsData[tokenKey] || !lsData[tokenKey].body || !lsData[tokenKey].body.access_token) {
+        // Robust search: Find ANY key that has body.access_token
+        const tokenKey = Object.keys(lsData).find(k =>
+            lsData[k] &&
+            lsData[k].body &&
+            lsData[k].body.access_token
+        );
+
+        if (!tokenKey) {
+            // Fallback: Try to find by the old method if the structure is slightly different but key matches
+            const legacyKey = Object.keys(lsData).find(k => k.includes('::openid profile email offline_access'));
+            if (legacyKey && lsData[legacyKey] && lsData[legacyKey].body && lsData[legacyKey].body.access_token) {
+                return lsData[legacyKey].body.access_token;
+            }
             throw new Error('Access token not found in local_storage.json');
         }
 
