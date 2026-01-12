@@ -2,36 +2,21 @@ require('dotenv').config();
 const cron = require('node-cron');
 const winston = require('winston');
 const { scrapeHeadlines } = require('./scraper');
+const { scrapeNewData } = require('./apiScraper');
 
-// Logger setup
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'scraper-error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'scraper-combined.log' }),
-  ],
-});
-
-const fs = require('fs');
-const path = require('path');
-
-// ... existing logger setup ...
-
-const SCHEDULE = process.env.CRON_SCHEDULE || '*/10 * * * *';
-const TRIGGER_FILE = path.join(__dirname, '../storage/trigger.txt');
-
-logger.info(`Starting MRKT Scraper Service. Schedule: ${SCHEDULE}`);
+// ... (logger setup) ...
 
 const runScraper = async () => {
   logger.info('Starting scrape job...');
   try {
+    // Phase 1: Headlines
     const count = await scrapeHeadlines(logger);
-    logger.info(`Scrape job completed. Inserted ${count} new headlines.`);
+    logger.info(`Headlines scraped: ${count}`);
+
+    // Phase 2: New Data Sources
+    await scrapeNewData(logger);
+
+    logger.info('Scrape job completed successfully.');
   } catch (error) {
     logger.error(`Scrape job failed: ${error.message}`);
     console.error(error);
