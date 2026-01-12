@@ -60,10 +60,13 @@ async function probe() {
                     const preview = JSON.stringify(response.data).substring(0, 200);
                     console.log(`    Data: ${preview}...`);
                 } else {
-                    // console.log(`[${response.status}] ${path}`);
+                    console.log(`[${response.status}] ${path}`);
                 }
             } catch (e) {
-                // console.log(`[ERR] ${path} - ${e.message}`);
+                console.log(`[ERR] ${path} - ${e.message}`);
+                if (e.response) {
+                    console.log(`    Status: ${e.response.status}`);
+                }
             }
         }
     }
