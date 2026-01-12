@@ -4,7 +4,27 @@ const winston = require('winston');
 const { scrapeHeadlines } = require('./scraper');
 const { scrapeNewData } = require('./apiScraper');
 
-// ... (logger setup) ...
+// Logger setup
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'scraper-error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'scraper-combined.log' }),
+  ],
+});
+
+const fs = require('fs');
+const path = require('path');
+
+const SCHEDULE = process.env.CRON_SCHEDULE || '*/10 * * * *';
+const TRIGGER_FILE = path.join(__dirname, '../storage/trigger.txt');
+
+logger.info(`Starting MRKT Scraper Service. Schedule: ${SCHEDULE}`);
 
 const runScraper = async () => {
   logger.info('Starting scrape job...');
