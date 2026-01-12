@@ -3,12 +3,11 @@ const fs = require('fs');
 const path = require('path');
 
 const BASE_URL = 'https://mrkt-server-a240deff7152.herokuapp.com';
-const ENDPOINTS_TO_TEST = [
-    '/mrkt-ai/mrkt-sentiment',
-    '/mrkt-ai/economic-data-summary',
-    '/calendar/trump-tracker',
-    '/mrkt-ai/trump-volatility',
-    '/mrkt-ai/etf-summary'
+'mrkt-ai/mrkt-sentiment',
+    'mrkt-ai/economic-data-summary',
+    'calendar/trump-tracker',
+    'mrkt-ai/trump-volatility',
+    'mrkt-ai/etf-summary'
 ];
 
 const PREFIXES = ['']; // No prefixes needed, full paths provided
