@@ -1,0 +1,60 @@
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+
+const BASE_URL = 'https://mrkt-server-a240deff7152.herokuapp.com';
+const ENDPOINTS_TO_TEST = [
+    '/mrkt-sentiment',
+    '/economic-data-summary',
+    '/trump-tracker',
+    '/trump-volatility',
+    '/etf-summary',
+    '/safe-haven-summary'
+];
+
+async function getAccessToken() {
+    const lsPath = path.join(__dirname, '../storage/local_storage.json');
+    if (!fs.existsSync(lsPath)) {
+        console.error('Local storage file not found!');
+        return null;
+    }
+    const lsData = JSON.parse(fs.readFileSync(lsPath, 'utf8'));
+    const tokenKey = Object.keys(lsData).find(k => k.includes('::openid profile email offline_access'));
+    if (!tokenKey) {
+        console.error('Token key not found in local storage!');
+        return null;
+    }
+    return lsData[tokenKey].body.access_token;
+}
+
+async function probe() {
+    const token = await getAccessToken();
+    if (!token) return;
+
+    console.log(`Probing ${BASE_URL} with token...`);
+
+    for (const endpoint of ENDPOINTS_TO_TEST) {
+        try {
+            const url = `${BASE_URL}${endpoint}`;
+            const response = await axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'application/json'
+                },
+                validateStatus: () => true // Don't throw on error status
+            });
+
+            console.log(`[${response.status}] ${endpoint} - ${response.headers['content-type']}`);
+
+            if (response.status === 200 && response.headers['content-type']?.includes('application/json')) {
+                const preview = JSON.stringify(response.data).substring(0, 100);
+                console.log(`    Data: ${preview}...`);
+            }
+        } catch (e) {
+            console.log(`[ERR] ${endpoint} - ${e.message}`);
+        }
+    }
+}
+
+probe();
