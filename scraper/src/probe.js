@@ -4,21 +4,14 @@ const path = require('path');
 
 const BASE_URL = 'https://mrkt-server-a240deff7152.herokuapp.com';
 const ENDPOINTS_TO_TEST = [
-    'mrkt-sentiment',
-    'economic-data-summary',
-    'trump-tracker',
-    'trump-volatility',
-    'etf-summary',
-    'safe-haven-summary'
+    '/mrkt-ai/mrkt-sentiment',
+    '/mrkt-ai/economic-data-summary',
+    '/calendar/trump-tracker',
+    '/mrkt-ai/trump-volatility',
+    '/mrkt-ai/etf-summary'
 ];
 
-const PREFIXES = [
-    '',
-    '/equities',
-    '/api',
-    '/api/v1',
-    '/market'
-];
+const PREFIXES = ['']; // No prefixes needed, full paths provided
 
 async function getAccessToken() {
     const lsPath = path.join(__dirname, '../storage/local_storage.json');
